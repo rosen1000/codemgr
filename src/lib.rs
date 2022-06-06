@@ -1,10 +1,12 @@
 extern crate serde;
 
 use ansi_term::{Color, Color::*};
+use question::{Answer::*, Question};
 use serde_derive::{Deserialize, Serialize};
 use std::fs::File;
 use std::io::{BufRead, BufReader, Write};
 use std::ops::Add;
+use toml::toml;
 
 const MANIFEST_PATH: &str = "./manifest.toml";
 
@@ -52,29 +54,58 @@ pub fn read_manifest() -> Option<Manifest> {
 }
 
 pub fn init_manifest() {
-    let file = File::create(MANIFEST_PATH);
-    match file {
-        Ok(mut file) => {
-            file.write(r#"version = 1"#.as_bytes()).unwrap();
-        },
-        Err(_) => {}
+    let answear = Question::new(
+        "No manifest.toml was found!\nDo you want to turn this folder into a \"code\" folder?",
+    )
+    .yes_no()
+    .default(YES)
+    .show_defaults()
+    .confirm();
+
+    if answear == YES {
+        println!("Creating new code management dir...");
+        let file = File::create(MANIFEST_PATH);
+        match file {
+            Ok(mut file) => {
+                let initial_data = toml! {
+                    [meta]
+                    version = 1
+                };
+                file.write(initial_data.to_string().as_bytes()).unwrap();
+                println!("Done!");
+            }
+            Err(e) => {
+                println!("Error: {}", e.to_string());
+            }
+        }
+    } else {
+        println!("Good bye!");
     }
 }
 
-#[derive(Deserialize, Serialize)]
+#[derive(Deserialize, Serialize, Debug)]
 pub struct Manifest {
-    pub version: Option<u8>,
+    pub meta: Option<Meta>,
     pub app: Option<Vec<App>>,
 }
 
-#[derive(Deserialize, Serialize)]
+#[derive(Deserialize, Serialize, Debug)]
+pub struct Meta {
+    pub version: u8,
+}
+
+#[derive(Deserialize, Serialize, Debug)]
 pub struct App {
-    pub version: Option<u8>,
+    pub version: u8,
+    pub name: String,
+    pub languages: Vec<String>,
+    pub tags: Vec<String>,
 }
 
 impl Manifest {
     pub fn save(&self) {
         let mut file = File::create(MANIFEST_PATH).unwrap();
-        file.write(toml::to_string(&self).unwrap().as_bytes()).unwrap();
+        file.write(toml::to_string(&self).unwrap().as_bytes())
+            .unwrap();
     }
 }

@@ -1,14 +1,16 @@
 [package]
+edition = "2021"
 name = "codemgr"
 version = "0.1.0"
-edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-term-inquiry = "0.1.1"
-rustyline = "9.1.0"
-toml = "0.5.8"
-serde_derive = "1.0.135"
-serde = "1.0.135"
 ansi_term = "0.12.1"
+chalk = "0.1.0"
+question = "0.2.2"
+rustyline = "9.1.0"
+serde = "1.0.135"
+serde_derive = "1.0.135"
+term-inquiry = "0.1.1"
+toml = "0.5.8"
