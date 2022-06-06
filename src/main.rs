@@ -1,5 +1,6 @@
-use codemgr::{init_manifest, read_manifest};
-// use term_inquiry::List;
+use codemgr::{init_manifest, read_manifest, META_DATA_VERSION};
+// use question::Question;
+use term_inquiry::List;
 
 pub mod lib;
 
@@ -12,7 +13,32 @@ fn main() {
 
     let manifest = manifest.unwrap();
 
+    if manifest.meta.as_ref().unwrap().version != META_DATA_VERSION {
+        println!("This folder is different version from this program!");
+        return;
+    }
+
+    let answer = List::new("Operation".to_string())
+        .add_item("Open project", 1)
+        .add_item("New project", 2)
+        .add_item("Delete project", 3)
+        .inquire();
+
+    match answer {
+        Ok(select) => match select {
+            1 => open_project(),
+            2 => new_project(),
+            3 => delete_project(),
+            _ => println!("lmao cringe"),
+        },
+        Err(_) => println!("lmao cringe"),
+    }
+
     println!("{:?}", manifest);
+
+    for app in manifest.app.unwrap() {
+        println!("{}: {:?}", app.name, app.languages);
+    }
     return;
 
     // let value = List::new("pizza?".to_string())
@@ -48,4 +74,16 @@ fn main() {
     // // config.app.push("asd".to_string());
     // let manifest = toml::to_string(&config).expect("cringe");
     // println!("manifest:\n{}\n", manifest);
+}
+
+fn open_project() {
+    println!("open");
+}
+
+fn new_project() {
+    println!("new");
+}
+
+fn delete_project() {
+    println!("delete");
 }

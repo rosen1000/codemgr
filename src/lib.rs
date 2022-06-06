@@ -3,12 +3,13 @@ extern crate serde;
 use ansi_term::{Color, Color::*};
 use question::{Answer::*, Question};
 use serde_derive::{Deserialize, Serialize};
-use std::fs::File;
+use std::fs::{File, self};
 use std::io::{BufRead, BufReader, Write};
 use std::ops::Add;
 use toml::toml;
 
 const MANIFEST_PATH: &str = "./manifest.toml";
+pub const META_DATA_VERSION: u8 = 1;
 
 fn warn_ansi() -> String {
     ansi("!", Blue, Yellow)
@@ -72,6 +73,7 @@ pub fn init_manifest() {
                     version = 1
                 };
                 file.write(initial_data.to_string().as_bytes()).unwrap();
+                fs::create_dir(".apps").unwrap();
                 println!("Done!");
             }
             Err(e) => {
@@ -96,7 +98,6 @@ pub struct Meta {
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct App {
-    pub version: u8,
     pub name: String,
     pub languages: Vec<String>,
     pub tags: Vec<String>,
