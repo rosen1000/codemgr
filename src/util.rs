@@ -2,13 +2,14 @@ extern crate serde;
 
 use question::{Answer::*, Question};
 use serde_derive::{Deserialize, Serialize};
-use std::fs::File;
+use std::fs::{File, self};
 use std::io::{BufRead, BufReader, Write};
 use toml::toml;
 
 pub use crate::logger::{print, LoggingLevel};
 
 const MANIFEST_PATH: &str = "./manifest.toml";
+pub const META_DATA_VERSION: u8 = 1;
 
 pub fn read_manifest() -> Option<Manifest> {
     let file = File::open(MANIFEST_PATH);
@@ -49,6 +50,7 @@ pub fn init_manifest() {
                     version = 1
                 };
                 file.write(initial_data.to_string().as_bytes()).unwrap();
+                fs::create_dir(".apps").unwrap();
                 println!("Done!");
             }
             Err(e) => {
@@ -73,7 +75,6 @@ pub struct Meta {
 
 #[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct App {
-    pub version: u8,
     pub name: String,
     pub languages: Vec<String>,
     pub tags: Vec<String>,

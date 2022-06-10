@@ -30,3 +30,15 @@ fn main() {
 
     print(query.unwrap(), LoggingLevel::INFO);
 }
+
+fn open_project() {
+    println!("open");
+}
+
+fn new_project() {
+    println!("new");
+}
+
+fn delete_project() {
+    println!("delete");
+}
