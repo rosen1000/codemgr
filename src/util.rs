@@ -1,36 +1,14 @@
 extern crate serde;
 
-use ansi_term::{Color, Color::*};
 use question::{Answer::*, Question};
 use serde_derive::{Deserialize, Serialize};
 use std::fs::File;
 use std::io::{BufRead, BufReader, Write};
-use std::ops::Add;
 use toml::toml;
 
+pub use crate::logger::{print, LoggingLevel};
+
 const MANIFEST_PATH: &str = "./manifest.toml";
-
-fn warn_ansi() -> String {
-    ansi("!", Blue, Yellow)
-}
-
-// fn ask_ansi() -> String {
-//     ansi("?", Blue, Cyan)
-// }
-
-// fn error_ansi() -> String {
-//     ansi("!!", Blue, Red)
-// }
-
-fn ansi(sym: &str, bracket_color: Color, sym_color: Color) -> String {
-    bracket_color
-        .bold()
-        .paint("[")
-        .to_owned()
-        .to_string()
-        .add(&sym_color.paint(sym).to_owned().to_string())
-        .add(&bracket_color.bold().paint("]").to_owned().to_string())
-}
 
 pub fn read_manifest() -> Option<Manifest> {
     let file = File::open(MANIFEST_PATH);
@@ -44,8 +22,7 @@ pub fn read_manifest() -> Option<Manifest> {
             }
         }
         Err(_) => {
-            println!("{} manifest.toml not found!", warn_ansi());
-            println!("{} probably you are not in initialized folder", warn_ansi());
+            print("Manifest.toml not found!", LoggingLevel::WARN);
             return None;
         }
     }
@@ -83,18 +60,18 @@ pub fn init_manifest() {
     }
 }
 
-#[derive(Deserialize, Serialize, Debug)]
+#[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct Manifest {
     pub meta: Option<Meta>,
     pub app: Option<Vec<App>>,
 }
 
-#[derive(Deserialize, Serialize, Debug)]
+#[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct Meta {
     pub version: u8,
 }
 
-#[derive(Deserialize, Serialize, Debug)]
+#[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct App {
     pub version: u8,
     pub name: String,
