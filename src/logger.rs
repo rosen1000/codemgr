@@ -2,13 +2,13 @@ use chrono::offset;
 use colored::Colorize;
 use std::fmt::Debug;
 
-#[cfg(debug_assertions)]
+// #[cfg(debug_assertions)]
 pub fn print<T>(data: T, log_type: LoggingLevel) -> ()
 where
     T: Debug,
 {
     match log_type {
-        LoggingLevel::INFO => {
+        LoggingLevel::Info => {
             println!(
                 "{} {}: {:#?}",
                 format!("{}", get_time()).truecolor(128, 128, 128),
@@ -16,7 +16,7 @@ where
                 &data
             )
         }
-        LoggingLevel::WARN => {
+        LoggingLevel::Warn => {
             println!(
                 "{} {}: {:?}",
                 format!("{}", get_time()).truecolor(128, 128, 128),
@@ -24,7 +24,7 @@ where
                 &data
             )
         }
-        LoggingLevel::ERROR => {
+        LoggingLevel::Error => {
             println!(
                 "{} {}: {:?}",
                 format!("{}", get_time()).truecolor(128, 128, 128),
@@ -41,7 +41,7 @@ fn get_time() -> String {
 }
 
 pub enum LoggingLevel {
-    INFO,
-    WARN,
-    ERROR,
+    Info,
+    Warn,
+    Error,
 }

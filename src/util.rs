@@ -1,8 +1,9 @@
 extern crate serde;
 
+use inquire::Select;
 use question::{Answer::*, Question};
 use serde_derive::{Deserialize, Serialize};
-use std::fs::{File, self};
+use std::fs::{self, File};
 use std::io::{BufRead, BufReader, Write};
 use toml::toml;
 
@@ -11,7 +12,13 @@ pub use crate::logger::{print, LoggingLevel};
 const MANIFEST_PATH: &str = "./manifest.toml";
 pub const META_DATA_VERSION: u8 = 1;
 
-pub fn read_manifest() -> Option<Manifest> {
+#[derive(Debug)]
+pub enum ReadManifestError {
+    NotFound,
+    NoApps
+}
+
+pub fn read_manifest() -> Result<Manifest, ReadManifestError> {
     let file = File::open(MANIFEST_PATH);
     let mut manifest_text = String::new();
     match file {
@@ -23,12 +30,18 @@ pub fn read_manifest() -> Option<Manifest> {
             }
         }
         Err(_) => {
-            print("Manifest.toml not found!", LoggingLevel::WARN);
-            return None;
+            print("Manifest.toml not found!", LoggingLevel::Warn);
+            return Err(ReadManifestError::NotFound);
         }
     }
 
-    Some(toml::from_str(&manifest_text).unwrap())
+    let parsed = toml::from_str(&manifest_text);
+    if parsed.is_err() {
+        return Err(ReadManifestError::NoApps);
+    }
+
+    let parsed = parsed.unwrap();
+    Ok(parsed)
 }
 
 pub fn init_manifest() {
@@ -62,10 +75,20 @@ pub fn init_manifest() {
     }
 }
 
+#[cfg(target_family = "unix")]
+pub fn create_sym_link(app: String) {
+    std::os::unix::fs::symlink(format!(".apps/{}", app), app).unwrap();
+}
+
+#[cfg(target_family = "windows")]
+pub fn create_sym_link(app: String) {
+    std::os::windows::fs::symlink_dir(format!(".apps/{}", app), app).unwrap();
+}
+
 #[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct Manifest {
-    pub meta: Option<Meta>,
-    pub app: Option<Vec<App>>,
+    pub meta: Meta,
+    pub apps: Vec<App>,
 }
 
 #[derive(Deserialize, Serialize, Debug, Clone)]
@@ -85,5 +108,25 @@ impl Manifest {
         let mut file = File::create(MANIFEST_PATH).unwrap();
         file.write(toml::to_string(&self).unwrap().as_bytes())
             .unwrap();
+    }
+
+    pub fn search_app_by_name(&self) -> Option<&App> {
+        let apps = self.apps.iter().map(|app| app.clone().name).collect();
+        let query = Select::new("Select project", apps).prompt();
+
+        if let Err(e) = &query {
+            print(e, LoggingLevel::Error);
+            return None;
+        }
+
+        let selected = query.unwrap();
+
+        for app in &self.apps {
+            if app.name == selected {
+                return Some(app);
+            }
+        }
+
+        return None;
     }
 }
