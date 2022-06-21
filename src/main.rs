@@ -16,8 +16,8 @@ fn main() {
     }
 
     let manifest = manifest.unwrap();
-    println!("using v{}", manifest.meta.version);
-    if manifest.meta.version != META_DATA_VERSION {
+    println!("using v{}", manifest.version);
+    if manifest.version != META_DATA_VERSION {
         println!("This folder is different version from this program!");
         return;
     }
@@ -136,7 +136,7 @@ fn delete_project(manifest: &mut Manifest) {
     if let Err(e) = app.nuke() {
         print(e.to_string(), LoggingLevel::Error);
     }
-    println!("{:?}", manifest);
+    print(&manifest, LoggingLevel::Info);
     manifest.save();
 }
 

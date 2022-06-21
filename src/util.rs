@@ -34,9 +34,7 @@ pub fn read_manifest() -> Option<Manifest> {
     let parsed = toml::from_str(&manifest_text);
     if parsed.is_err() {
         let manifest = Manifest {
-            meta: Meta {
-                version: META_DATA_VERSION,
-            },
+            version: META_DATA_VERSION,
             apps: vec![],
         };
         manifest.save();
@@ -91,15 +89,10 @@ fn delete_sym_link(app: String) -> Result<(), std::io::Error> {
     std::fs::remove_file(app)
 }
 
-#[derive(Deserialize, Serialize, Debug, Clone)]
+#[derive(Deserialize, Serialize, Debug, Clone, Default)]
 pub struct Manifest {
-    pub meta: Meta,
-    pub apps: Vec<App>,
-}
-
-#[derive(Deserialize, Serialize, Debug, Clone)]
-pub struct Meta {
     pub version: u8,
+    pub apps: Vec<App>,
 }
 
 #[derive(Deserialize, Serialize, Debug, Clone)]
@@ -137,7 +130,12 @@ impl App {
 impl Manifest {
     pub fn save(&self) {
         let mut file = File::create(MANIFEST_PATH).unwrap();
-        let manifest_toml = toml::to_string(&self);
+
+        let mut manifest = Manifest::default();
+        manifest.version = self.clone().version;
+        manifest.apps = self.clone().apps;
+
+        let manifest_toml = toml::to_string(&manifest);
         println!("{:?}", manifest_toml);
         if let Ok(to_write) = manifest_toml {
             if let Err(e) = file.write(to_write.as_bytes()) {
